@@ -8,7 +8,7 @@
   <h3 align="center">bib boi</h3>
 
   <p align="center">
-    Tool to help with bibtex management
+    Tools to help with bibtex management
   </p>
 </div>
 
@@ -17,27 +17,42 @@
 
 When I started writing my thesis, I brought together multiple papers I'd written over several years.
 During this time, I'd changed my citekey format on Zotero, and also my coauthors may have provided some of the original references.
-When I compiled early versions of my thesis, I had over 100 citekey warnings.
+When I compiled early versions of my thesis, I had over 100 citekey warnings, and I had the sneaking suspicion that many of my arXiv references would now be published.
+
 I developed these tools to help reduce the time I needed to spend manually looking for issues.
+Eventually, I bit to bullet, and made my thesis bib file a direct live export of my Zotero library.
+This of course increased my warnings three-fold.
+However, it encouraged me to make my fixes in my Zotero database directly.
 
 ## Usage
 
 
-Search for possible duplicated bibentries (this is very fuzzy, but could reveal some overlaps):
+####  Search for possible duplicated bibentries
+
+This approach is very fuzzy, but could reveal some overlaps.
+
 ``` sh
 python3 dupe_check.py $BIB_FILE
 ```
 
-Search for possible arXiv papers that have a published version:
+#### Search for possible arXiv papers that might have a published version
+
+This approach looks to see if the arXIv paper has a DOI, or has a comment that might suggest there is a published version
+
 ``` sh
 python3 arXiv_auto_check.py $BIB_FILE
 ```
 
-Search for arXiv papers that have not manually verified that there is not a published version:
+#### Semi-manually verify your arXiv papers
+
+Once you have run the auto-checker script, you may still want to be sure that you haven't left any papers out.
+With this script, it prints out all of your arXiv papers, and their URLs.
+If you have verified that a given paper is _only_ available on arXiv, add its citekey to the `verified_arxiv.txt` file.
+This will be easier than keeping a checklist yourself.
+
 ``` sh
 python3 arXiv_manual_check.py $BIB_FILE
 ```
-For the above command, you should add the keys of entries that you have verified are only available on arXiv to the `verified_arxiv.txt` file.
 
 <!-- LICENSE -->
 ## License

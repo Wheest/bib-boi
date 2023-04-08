@@ -23,6 +23,34 @@ def extract_arxiv_id(entry: dict) -> Optional[str]:
     return arxiv_id
 
 
+def comment_checker(comment):
+    """Sometimes authors will add a comment that their paper has been
+    published somewhere, but often the comment is just used to list other info
+    """
+    if comment is None:
+        return False
+    comment = comment.lower()
+    if "published" in comment:
+        return True
+    elif "conference" in comment:
+        return True
+    elif "doi" in comment:
+        return True
+    elif "acm" in comment:
+        return True
+    elif "ieee" in comment:
+        return True
+    elif "accepted" in comment:
+        return True
+    elif "camera" in comment:
+        return True
+    elif bool(re.search(r"\s\d{4}\s", comment)):
+        # check if something "year-like" is in the comment
+        return True
+    else:
+        return False
+
+
 def main(bibtex_file: str):
     with open(bibtex_file, "r") as file:
         bibtex_str = file.read()
@@ -36,9 +64,9 @@ def main(bibtex_file: str):
             search = arxiv.Search(id_list=[arxiv_id])
             try:
                 paper = next(search.results())
-                if paper.doi:
+                if paper.doi or comment_checker(paper.comment):
                     print(
-                        f"{entry['title']} (arXiv ID: {arxiv_id}) might be published elsewhere. DOI: {paper.doi}"
+                        f"{paper.title} {paper.links[0].href}, {paper.comment}, doi: {paper.doi}"
                     )
                 else:
                     ...

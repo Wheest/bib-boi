@@ -1,3 +1,4 @@
 bibtexparser
 python-Levenshtein
 arxiv
+tqdm
