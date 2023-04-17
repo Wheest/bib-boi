@@ -54,6 +54,20 @@ This will be easier than keeping a checklist yourself.
 python3 arXiv_manual_check.py $BIB_FILE
 ```
 
+#### Search for possible capitalisation issues
+
+Personally I think that paper titles should be capitalised, e.g. "Transfer-Tuning: Reusing Auto-Schedules for Efficient Tensor Program Code Generation".
+
+Some papers don't follow that rule, but it's your bibliography and as long as the title is the same, you can use whatever capitalisation you want.
+`capital_check.py` looks through your bibfile, and uses some heuristics to see if their is a capitalisation issue in the title or conference name.
+It tells you what word in a title that triggered the heuristic.
+
+You can add exceptions to the file `verified_capital.txt`, e.g. `mRNA: Enabling Efficient Mapping Space Exploration for a Reconfiguration Neural Accelerator` doesn't start with a capital letter, but is correct.
+
+``` sh
+python3 capital_check.py $BIB_FILE
+```
+
 <!-- LICENSE -->
 ## License
 
