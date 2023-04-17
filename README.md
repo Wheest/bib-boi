@@ -56,7 +56,7 @@ python3 arXiv_manual_check.py $BIB_FILE
 
 #### Search for possible capitalisation issues
 
-Personally I think that paper titles should be capitalised, e.g. "Transfer-Tuning: Reusing Auto-Schedules for Efficient Tensor Program Code Generation".
+Personally I think that paper titles should be capitalised, e.g. "Transfer-Tuning: Reusing Auto-Schedules for Efficient Tensor Program Code Generation", though common words (e.g., "for", "and", "of") shouldn't be.
 
 Some papers don't follow that rule, but it's your bibliography and as long as the title is the same, you can use whatever capitalisation you want.
 `capital_check.py` looks through your bibfile, and uses some heuristics to see if their is a capitalisation issue in the title or conference name.
