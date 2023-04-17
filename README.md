@@ -30,6 +30,9 @@ However, it encouraged me to make my fixes in my Zotero database directly.
 ####  Search for possible duplicated bibentries
 
 This approach is very fuzzy, but could reveal some overlaps.
+Your first step should probably to open up your reference manager, assuming you're using one, and sort by name.
+That will reveal the most obvious overlaps.
+Next, you can try this python script:
 
 ``` sh
 python3 dupe_check.py $BIB_FILE
