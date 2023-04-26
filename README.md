@@ -8,7 +8,7 @@
   <h3 align="center">bib boi</h3>
 
   <p align="center">
-    Tools to help with bibtex management
+    Tools to help with LaTeX paper writing
   </p>
 </div>
 
@@ -23,6 +23,8 @@ I developed these tools to help reduce the time I needed to spend manually looki
 Eventually, I bit to bullet, and made my thesis bib file a direct live export of my Zotero library.
 This of course increased my warnings three-fold.
 However, it encouraged me to make my fixes in my Zotero database directly.
+
+I also brought in some LLM (large language model) based paper reviews.
 
 ## Usage
 
@@ -40,7 +42,7 @@ python3 dupe_check.py $BIB_FILE
 
 #### Search for possible arXiv papers that might have a published version
 
-This approach looks to see if the arXIv paper has a DOI, or has a comment that might suggest there is a published version
+This approach looks to see if the arXiv paper has a DOI, or has a comment that might suggest there is a published version
 
 ``` sh
 python3 arXiv_auto_check.py $BIB_FILE
@@ -59,6 +61,8 @@ python3 arXiv_manual_check.py $BIB_FILE
 
 #### Search for possible capitalisation issues
 
+*NOTE: this script is still a WIP, since bibtex capitalisation actually needs to have braces in it to work properly.*
+
 Personally I think that paper titles should be capitalised, e.g. "Transfer-Tuning: Reusing Auto-Schedules for Efficient Tensor Program Code Generation", though common words (e.g., "for", "and", "of") shouldn't be.
 
 Some papers don't follow that rule, but it's your bibliography and as long as the title is the same, you can use whatever capitalisation you want.
@@ -70,6 +74,45 @@ You can add exceptions to the file `verified_capital.txt`, e.g. `mRNA: Enabling 
 ``` sh
 python3 capital_check.py $BIB_FILE
 ```
+
+#### Give reviewer feedback on the paper
+
+This tool uses a large language model to give reviews for your text in the style of a paper reviewer.
+
+For example:
+
+> L12: Consider adding a citation to support the statement about bloated network architectures with diminishing returns.
+>
+> L15: Specify what is meant by "representational capacity".
+>
+> L16: It may be helpful to provide some additional context or explanation for what depthwise convolutions are and how they differ from standard convolutions, for readers who may be unfamiliar with the concept.
+
+Right now it uses OpenAI GPT models as the backend, which may be a problem from a privacy perspective if your work in unpublished.
+[OpenAI say](https://openai.com/policies/privacy-policy) that they won't use data you send them, but DYOR with regards to this point.
+
+> What is the impact of this with regards to academic or research integrity?
+
+You should be writing your own paper text, because 1) it is against a variety of emerging policies from academic and conference guidelines, 2) you will be cheating yourself from a valuable learning experience, and 3) the output of LLMs is inherently unreliable.
+
+That being said, using it as a tool to get feedback on your work is acceptable, in my opinion.
+Papers are reviewed by colleagues and collaborators all the time.
+That being said, like suggestions from humans, you should not take LLM suggestions as gospel, they can be wrong sometimes.
+
+To run the script in this repo, you need an OpenAI API key, then you can run the script passing you bibtex file.
+
+``` sh
+export OPENAI_API_KEY='sk-fake_key_hi_there_how_are_you_mate'
+python3 reviewer_2.py $YOUR_TEX_FILE
+```
+
+Using the `gpt-3.5-turbo` model, there is a limited amount of text we can process at once.
+If a file has more text, you will be prompted if you want to continue reviewing it.
+Alternatively, if you want clarification on one of the points, there is an option to query the model, just be careful that you don't use it to _write_ for you.
+
+Features that would be nice to have in this script include:
+- reviewing with a sliding window, rather than in discrete chunks.
+- automated exploration of more complex LaTeX projects, for example ones with multiple files using `\input` statements.
+- more prompt configuration options, e.g., "be nice", "slag me off"
 
 <!-- LICENSE -->
 ## License

@@ -2,3 +2,5 @@ bibtexparser
 python-Levenshtein
 arxiv
 tqdm
+openai
+argparse

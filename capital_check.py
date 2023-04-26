@@ -6,7 +6,20 @@ import bibtexparser
 from bibtexparser.bparser import BibTexParser
 
 
-common_words = ["in", "and", "of", "on", "with", "at", "to", "for", "from", "the", "or"]
+common_words = [
+    "in",
+    "and",
+    "of",
+    "on",
+    "with",
+    "at",
+    "to",
+    "for",
+    "from",
+    "the",
+    "or",
+    "via",
+]
 
 
 def strip(title):
