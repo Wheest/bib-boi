@@ -47,6 +47,8 @@ def read_tex_file(fname, start_line=0, max_tokens=4 * 1024):
         line_no = i + start_line + 1
         if line == "\n":
             l = f"L{line_no}\t\n"
+        elif line.lstrip() == "":
+            continue
         elif line.lstrip()[0] == "%":
             continue  # don't include commented out text
         else:
