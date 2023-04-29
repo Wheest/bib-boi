@@ -110,9 +110,10 @@ If a file has more text, you will be prompted if you want to continue reviewing 
 Alternatively, if you want clarification on one of the points, there is an option to query the model, just be careful that you don't use it to _write_ for you.
 
 Features that would be nice to have in this script include:
-- reviewing with a sliding window, rather than in discrete chunks.
-- automated exploration of more complex LaTeX projects, for example ones with multiple files using `\input` statements.
-- more prompt configuration options, e.g., "be nice", "slag me off"
+- ✅ automated exploration of more complex LaTeX projects, for example ones with multiple files using `\input` statements. Enabled with the `--recurse_subfiles` flag, YMMV.
+- [ ] reviewing with a sliding window, rather than in discrete chunks.
+- [ ] more prompt configuration options, e.g., "be nice", "slag me off"
+- [ ] post-processing where we pass the response through a 2nd prompt to filter unhelpful output
 
 <!-- LICENSE -->
 ## License

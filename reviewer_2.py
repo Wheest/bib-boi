@@ -2,6 +2,8 @@
 import openai
 import textwrap
 import argparse
+import os
+import re
 
 # import tiktoken
 
@@ -32,15 +34,15 @@ def printwrap(string, max_width=80):
         else:
             wrapped_lines.extend(wrapped_line)
 
-    text = "\n".join(wrapped_lines)
-    print(text)
+    text = "\n\t".join(wrapped_lines)
+    print(f"\t{text}")
 
 
 def read_tex_file(fname, start_line=0, max_tokens=4 * 1024):
     # Read the content of the latex file
     with open(fname, "r") as f:
         lines = f.readlines()
-    text = f"filename: {fname}"
+    text = f"[started: {fname}]"
     tokens = 0  # use heuristic of 1 token per 3 characters
     partial = False  # have we only read a subset of our file
     for i, line in enumerate(lines[start_line:]):
@@ -59,6 +61,87 @@ def read_tex_file(fname, start_line=0, max_tokens=4 * 1024):
             partial = True
             break
     return text, line_no, partial
+
+
+def read_tex_file_stack(fname_stack, max_tokens=4 * 1024):
+    """Recursively read TeX files that use \input"""
+
+    # cd so we are at tex project root dir
+    root_dir = os.path.dirname(fname_stack[0][0])
+    os.chdir(root_dir)
+
+    stack_files = [f[0] for f in fname_stack]
+
+    def read_file(fname, start_line, tokens, max_tokens):
+        with open(fname, "r") as f:
+            lines = f.readlines()
+        text = f"[started {fname}, start_line: {start_line}]\n"
+        partial = True
+        input_partial = False  # is our sub_file partially finished
+
+        def _check_tokens():
+            """Helper function that checks if we have
+            used up our token budget."""
+            if tokens > max_tokens:
+                return True
+            else:
+                return False
+
+        for i, line in enumerate(lines[start_line:]):
+            line_no = i + start_line + 1
+
+            if line == "\n":
+                continue
+            elif line.lstrip() == "":
+                continue
+            elif line.lstrip()[0] == "%":
+                continue
+            elif input_match := re.match(r"\\input{(.*?)}", line):
+                # check if we are including a sub-file (walrus ftw)
+                input_fname = input_match.group(1)
+
+                if ".tex" not in input_fname:
+                    # add file extension if missing
+                    input_fname += ".tex"
+
+                fname_stack[-1] = (fname, line_no)  # save our previous place
+                # if input_fname in stack_files:
+                #     raise ValueError("{input_fname} already in stack", fname_stack)
+                fname_stack.append((input_fname, 0))  # add new file to stack
+
+                print("> reading subfile: ", input_fname)
+                input_text, input_tokens, input_partial, last_line = read_file(
+                    input_fname, 0, tokens, max_tokens
+                )
+                text += input_text
+                tokens += input_tokens
+            else:
+                l = f"L{line_no}\t{line}\n"
+                text += l
+                tokens += len(l) // 3
+
+            if _check_tokens():
+                break
+
+        # check if we have finished parsing the file
+        if line_no >= len(lines):
+            text += f"[finished {fname}]\n"
+            print(f"> processed {fname}", line_no, start_line, fname_stack)
+            fname_stack.pop()  # remove file from stack
+            partial = False
+        elif not input_partial:
+            # save our place, if we have no pending sub-files
+            fname_stack[-1] = (fname, line_no)
+        return text, tokens, partial, line_no
+
+    fname, start_line = fname_stack[-1]  # read the last item in the stack
+    text, tokens, partial, _ = read_file(fname, start_line, 0, max_tokens)
+    if len(fname_stack) == 0:
+        # we have processed the whole document
+        partial = False
+    else:
+        partial = True
+    return text, fname_stack, partial
 
 
 def continue_check():
@@ -86,23 +169,43 @@ def query_response(messages, query, model):
 
 
 def generate_feedback(
-    fname, model, thesis_topic, start_line=0, messages=[], total_cost=0.0
+    fname,
+    model,
+    thesis_topic,
+    recurse_subfiles=False,
+    fname_stack=None,
+    start_line=0,
+    messages=[],
+    total_cost=0.0,
 ):
-    text, final_line, partial = read_tex_file(fname, start_line)
 
-    # num_tokens = estimate_tokens(text, model)
-    # print(f"Estimated {num_tokens} tokens")
+    if not recurse_subfiles:
+        text, final_line, partial = read_tex_file(fname, start_line, subfiles)
+    else:
+        text, fname_stack, partial = read_tex_file_stack(fname_stack)
+        final_line = 0
 
     message = f"""{text}
 
     The above is an exert from a thesis about {thesis_topic}.
+    It may spans several LaTeX files, the start and end of a file are indicated
+    with `[started $filename_x]` and `[ended $filename_x]`.
     The line number in the LaTeX file is included.
     Give feedback on the writing quality and give suggestions.
     Be concise, reference line numbers, do not quote large sections of the text.
+    Make it clear when the file being reviewed has changed.
     Format should be like:
+    [reviewing file: `$filename_x`]
     - L5: [feedback]
     - L30: [feedback]
+
+    [reviewing file: `$filename_x`]
+    - L3: [feedback]
+    etc
     """
+    # print("debug:", text)
+    # num_tokens = estimate_tokens(text, model)
+    # print(f"Estimated {num_tokens} tokens")
 
     messages.append({"role": "user", "content": message})
 
@@ -115,8 +218,18 @@ def generate_feedback(
     tokens = completion.usage.total_tokens
     cost = pricing(tokens, model)
     total_cost += cost
+    print()
     print(f"We dealt with {tokens} tokens, around ${cost} (total: ${total_cost})")
-    print(f"final line was: {final_line} (done: {not partial})")
+    if not recurse_subfiles:
+        print(f"final line was: {final_line} (done: {not partial})")
+    else:
+        print("post-run stack:", fname_stack)
+        stack_top = fname_stack[-1]
+        print(
+            f"final line was: {stack_top[0]}:L{stack_top[1]}"
+            + f" (done: {not partial}, stack_size: {len(fname_stack)})"
+        )
+
     cont, query = continue_check()
     print("\n\n\n")
 
@@ -136,6 +249,8 @@ def generate_feedback(
         fname,
         model,
         thesis_topic,
+        recurse_subfiles=recurse_subfiles,
+        fname_stack=fname_stack,
         start_line=final_line - 1,
         messages=[],
         total_cost=total_cost,
@@ -154,6 +269,31 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model", type=str, default="gpt-3.5-turbo-0301", help="Model backend to use"
     )
+    parser.add_argument(
+        "--recurse_subfiles",
+        action="store_true",
+        help="Read additional TeX files included using \input",
+    )
+    parser.add_argument(
+        "--first_line",
+        type=int,
+        default=0,
+        help="First line to start reading from",
+    )
+    # parser.add_argument(
+    #     "--post_process",
+    #     action="store_true",
+    #     help="Pass the review through an additional prompt to improve its quality",
+    # )
     args = parser.parse_args()
-    generate_feedback(args.tex_file, args.model, args.thesis_topic)
+
+    fname_stack = [(args.tex_file, args.first_line)]
+    generate_feedback(
+        args.tex_file,
+        args.model,
+        args.thesis_topic,
+        args.recurse_subfiles,
+        fname_stack,
+        start_line=args.first_line,
+    )
     print("Cheers!")
