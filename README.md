@@ -108,12 +108,16 @@ python3 reviewer_2.py $YOUR_TEX_FILE
 Using the `gpt-3.5-turbo` model, there is a limited amount of text we can process at once.
 If a file has more text, you will be prompted if you want to continue reviewing it.
 Alternatively, if you want clarification on one of the points, there is an option to query the model, just be careful that you don't use it to _write_ for you.
+The tool was written under the assumption that you start each sentence on a new line, which you should be doing for LaTeX files anyway.
+
+Note that the model may be off-by-one for referencing line numbers, and may even hallucinate errors (e.g., `- L61: "opague" should be spelled "opaque".`, even though `opague` does not appear in the text).
+Take it as partially reliable, but exercise your own judgement.
 
 Features that would be nice to have in this script include:
 - ✅ automated exploration of more complex LaTeX projects, for example ones with multiple files using `\input` statements. Enabled with the `--recurse_subfiles` flag, YMMV.
-- [ ] reviewing with a sliding window, rather than in discrete chunks.
-- [ ] more prompt configuration options, e.g., "be nice", "slag me off"
-- [ ] post-processing where we pass the response through a 2nd prompt to filter unhelpful output
+- reviewing with a sliding window, rather than in discrete chunks.
+- more prompt configuration options, e.g., "be nice", "slag me off".
+- post-processing where we pass the response through a 2nd prompt to filter unhelpful output.
 
 <!-- LICENSE -->
 ## License
