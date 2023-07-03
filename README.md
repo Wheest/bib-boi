@@ -28,54 +28,7 @@ I also brought in some LLM (large language model) based paper reviews.
 
 ## Usage
 
-
-####  Search for possible duplicated bibentries
-
-This approach is very fuzzy, but could reveal some overlaps.
-Your first step should probably to open up your reference manager, assuming you're using one, and sort by name.
-That will reveal the most obvious overlaps.
-Next, you can try this python script:
-
-``` sh
-python3 dupe_check.py $BIB_FILE
-```
-
-#### Search for possible arXiv papers that might have a published version
-
-This approach looks to see if the arXiv paper has a DOI, or has a comment that might suggest there is a published version
-
-``` sh
-python3 arXiv_auto_check.py $BIB_FILE
-```
-
-#### Semi-manually verify your arXiv papers
-
-Once you have run the auto-checker script, you may still want to be sure that you haven't left any papers out.
-With this script, it prints out all of your arXiv papers, and their URLs.
-If you have verified that a given paper is _only_ available on arXiv, add its citekey to the `verified_arxiv.txt` file.
-This will be easier than keeping a checklist yourself.
-
-``` sh
-python3 arXiv_manual_check.py $BIB_FILE
-```
-
-#### Search for possible capitalisation issues
-
-*NOTE: this script is still a WIP, since bibtex capitalisation actually needs to have braces in it to work properly.*
-
-Personally I think that paper titles should be capitalised, e.g. "Transfer-Tuning: Reusing Auto-Schedules for Efficient Tensor Program Code Generation", though common words (e.g., "for", "and", "of") shouldn't be.
-
-Some papers don't follow that rule, but it's your bibliography and as long as the title is the same, you can use whatever capitalisation you want.
-`capital_check.py` looks through your bibfile, and uses some heuristics to see if their is a capitalisation issue in the title or conference name.
-It tells you what word in a title that triggered the heuristic.
-
-You can add exceptions to the file `verified_capital.txt`, e.g. `mRNA: Enabling Efficient Mapping Space Exploration for a Reconfiguration Neural Accelerator` doesn't start with a capital letter, but is correct.
-
-``` sh
-python3 capital_check.py $BIB_FILE
-```
-
-#### Give reviewer feedback on the paper
+#### Give LLM reviewer feedback on the paper
 
 This tool uses a large language model to give reviews for your text in the style of a paper reviewer.
 
@@ -118,6 +71,63 @@ Features that would be nice to have in this script include:
 - reviewing with a sliding window, rather than in discrete chunks.
 - more prompt configuration options, e.g., "be nice", "slag me off".
 - post-processing where we pass the response through a 2nd prompt to filter unhelpful output.
+
+
+####  Search for possible duplicated bibentries
+
+This approach is very fuzzy, but could reveal some overlaps.
+Your first step should probably to open up your reference manager, assuming you're using one, and sort by name.
+That will reveal the most obvious overlaps.
+Next, you can try this python script:
+
+``` sh
+python3 dupe_check.py $BIB_FILE
+```
+
+#### Search for possible arXiv papers that might have a published version
+
+This approach looks to see if the arXiv paper has a DOI, or has a comment that might suggest there is a published version
+
+``` sh
+python3 arXiv_auto_check.py $BIB_FILE
+```
+
+####  Check if author names are incomplete
+
+This tool checks if author names are left as abbreviations, e.g. `J. Blogs`.
+Abbreviations should be done by the document, not the bibtex database.
+
+``` sh
+python3 name_check.py $BIB_FILE
+```
+
+#### Semi-manually verify your arXiv papers
+
+Once you have run the auto-checker script, you may still want to be sure that you haven't left any papers out.
+With this script, it prints out all of your arXiv papers, and their URLs.
+If you have verified that a given paper is _only_ available on arXiv, add its citekey to the `verified_arxiv.txt` file.
+This will be easier than keeping a checklist yourself.
+
+``` sh
+python3 arXiv_manual_check.py $BIB_FILE
+```
+
+#### Search for possible capitalisation issues
+
+*NOTE: this script is still a WIP, since bibtex capitalisation actually needs to have braces in it to work properly.*
+
+Personally I think that paper titles should be capitalised, e.g. "Transfer-Tuning: Reusing Auto-Schedules for Efficient Tensor Program Code Generation", though common words (e.g., "for", "and", "of") shouldn't be.
+
+Some papers don't follow that rule, but it's your bibliography and as long as the title is the same, you can use whatever capitalisation you want.
+`capital_check.py` looks through your bibfile, and uses some heuristics to see if their is a capitalisation issue in the title or conference name.
+It tells you what word in a title that triggered the heuristic.
+
+You can add exceptions to the file `verified_capital.txt`, e.g. `mRNA: Enabling Efficient Mapping Space Exploration for a Reconfiguration Neural Accelerator` doesn't start with a capital letter, but is correct.
+
+``` sh
+python3 capital_check.py $BIB_FILE
+```
+
 
 <!-- LICENSE -->
 ## License
