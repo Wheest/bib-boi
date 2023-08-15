@@ -129,6 +129,25 @@ python3 capital_check.py $BIB_FILE
 ```
 
 
+#### Gender ratio estimator
+
+This tool parses the authors in your bibliography and estimates what the gender ratio is.
+
+You first need to generate a sub-bibliography of papers you _actually_ cite from your bibfile
+run (assuming your main tex file is `00-main.tex` and main bib is `refs.bib`).
+Generates a new bib file `extracted.bib`:
+
+```sh
+pdflatex -shell-escape 00-main.tex
+biber 00-main
+pdflatex -shell-escape 00-main.tex
+pdflatex -shell-escape 00-main.tex
+
+jabref -a 00-main,/tmp/extracted refs.bib
+```
+
+Then you can run `bib_stats.py`.  You will also need to set your `OPENAI_KEY`, or comment out that code.
+
 <!-- LICENSE -->
 ## License
 
